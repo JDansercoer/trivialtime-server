@@ -98,5 +98,14 @@ export default ({ config, db }) => {
     res.json({ version });
   });
 
+  api.post("/reset", (req, res) => {
+    players = [];
+
+    pusher.trigger("buzzer-channel", "players-update", {
+      message: players
+    });
+    res.json({ version });
+  });
+
   return api;
 };
