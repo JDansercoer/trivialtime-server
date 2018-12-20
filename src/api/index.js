@@ -57,6 +57,13 @@ export default ({ config, db }) => {
 
   api.post("/buzz", (req, res) => {
     const username = req.body.username;
+
+    const player = _.find(players, ["username", username]);
+    if (player.order !== 0) {
+      res.json({ version });
+      return;
+    }
+
     const lastPlayer = _.maxBy(players, "order");
 
     players = updatedPlayersByUsername(players, username, {
