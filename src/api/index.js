@@ -35,6 +35,14 @@ export default ({ config, db }) => {
 
   api.post("/join", (req, res) => {
     const username = req.body.username;
+
+    const player = _.find(players, ["username", username]);
+
+    if (player) {
+      res.json({ version });
+      return;
+    }
+
     players.push({
       username,
       score: 0,
