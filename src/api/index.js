@@ -115,6 +115,17 @@ export default ({ config, db }) => {
     res.json({ version });
   });
 
+  api.post("/next", (req, res) => {
+    players = _.map(players, player => {
+      return { ...player, order: 0 };
+    });
+    pusher.trigger("buzzer-channel", "players-update", {
+      message: players
+    });
+    pusher.trigger("buzzer-channel", "next-question", {});
+    res.json({ version });
+  });
+
   api.post("/reset", (req, res) => {
     players = [];
 
