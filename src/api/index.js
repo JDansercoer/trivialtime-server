@@ -81,11 +81,13 @@ export default ({ config, db }) => {
     pusher.trigger("buzzer-channel", "players-update", {
       message: players
     });
+    pusher.trigger("buzzer-channel", "next-question", {});
     res.json({ version });
   });
 
   api.post("/incorrect", (req, res) => {
     const username = req.body.username;
+
     const lastPlayer = _.maxBy(players, "order");
 
     players = _.map(players, player => {
@@ -112,6 +114,7 @@ export default ({ config, db }) => {
     pusher.trigger("buzzer-channel", "players-update", {
       message: players
     });
+    pusher.trigger("buzzer-channel", "next-question", {});
     res.json({ version });
   });
 
