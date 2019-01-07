@@ -75,6 +75,24 @@ export default ({ config, db }) => {
     res.json({ version });
   });
 
+  api.post("/pass", (req, res) => {
+    const username = req.body.username;
+
+    const player = _.find(players, ["username", username]);
+    if (player.order !== 0) {
+      res.json({ version });
+      return;
+    }
+
+    players = updatedPlayersByUsername(players, username, {
+      order: -1
+    });
+    pusher.trigger("buzzer-channel", "players-update", {
+      message: players
+    });
+    res.json({ version });
+  });
+
   api.post("/correct", (req, res) => {
     const username = req.body.username;
     const lastPlayer = _.maxBy(players, "order");
