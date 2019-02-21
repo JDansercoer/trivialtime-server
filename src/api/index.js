@@ -120,16 +120,16 @@ export default ({ config, db }) => {
 
     players = _.map(players, player => {
       if (player.order === 1) {
-        db.collection("players").updateOne(
-          {
-            username: player.username
-          },
-          {
-            $inc: {
-              score: 1
-            }
-          }
-        );
+        // db.collection("players").updateOne(
+        //   {
+        //     username: player.username
+        //   },
+        //   {
+        //     $inc: {
+        //       score: 1
+        //     }
+        //   }
+        // );
         return { ...player, order: 0, score: player.score + 1 };
       }
       return { ...player, order: 0 };
