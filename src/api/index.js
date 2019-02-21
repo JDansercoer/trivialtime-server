@@ -34,16 +34,16 @@ export default ({ config, db }) => {
     res.json(players);
   });
 
-  api.get("/players", async (req, res) => {
-    const players = await db
-      .collection("players")
-      .find({})
-      .toArray();
+  // api.get("/players", async (req, res) => {
+  //   const players = await db
+  //     .collection("players")
+  //     .find({})
+  //     .toArray();
 
-    res.json(players);
-  });
+  //   res.json(players);
+  // });
 
-  api.post("/join", async (req, res) => {
+  api.post("/join", (req, res) => {
     const username = _.toLower(req.body.username);
 
     const player = _.find(players, ["username", username]);
@@ -63,13 +63,13 @@ export default ({ config, db }) => {
       message: players
     });
 
-    const existingPlayer = await db.collection("players").findOne({ username });
-    if (!existingPlayer) {
-      db.collection("players").insertOne({
-        username,
-        score: 0
-      });
-    }
+    // const existingPlayer = await db.collection("players").findOne({ username });
+    // if (!existingPlayer) {
+    //   db.collection("players").insertOne({
+    //     username,
+    //     score: 0
+    //   });
+    // }
 
     res.json({ version });
   });
