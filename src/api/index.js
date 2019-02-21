@@ -13,6 +13,7 @@ var pusher = new Pusher({
 });
 
 let players = [];
+let currentQuestion = 1;
 
 const updatedPlayersByUsername = (players, username, value) => {
   return players.map(player => {
@@ -33,8 +34,17 @@ export default ({ config, db }) => {
     res.json(players);
   });
 
-  api.post("/join", (req, res) => {
-    const username = req.body.username;
+  api.get("/players", async (req, res) => {
+    const players = await db
+      .collection("players")
+      .find({})
+      .toArray();
+
+    res.json(players);
+  });
+
+  api.post("/join", async (req, res) => {
+    const username = _.toLower(req.body.username);
 
     const player = _.find(players, ["username", username]);
 
@@ -52,11 +62,22 @@ export default ({ config, db }) => {
     pusher.trigger("buzzer-channel", "players-update", {
       message: players
     });
+
+    const existingPlayer = await db.collection("players").findOne({ username });
+    if (!existingPlayer) {
+      db.collection("players").insertOne({
+        username,
+        score: 0
+      });
+    }
+
     res.json({ version });
   });
 
   api.post("/buzz", (req, res) => {
-    const username = req.body.username;
+    const username = _.toLower(req.body.username);
+    console.log(username);
+    console.log(players);
 
     const player = _.find(players, ["username", username]);
     if (player.order !== 0) {
@@ -76,7 +97,7 @@ export default ({ config, db }) => {
   });
 
   api.post("/pass", (req, res) => {
-    const username = req.body.username;
+    const username = _.toLower(req.body.username);
 
     const player = _.find(players, ["username", username]);
     if (player.order !== 0) {
@@ -94,11 +115,21 @@ export default ({ config, db }) => {
   });
 
   api.post("/correct", (req, res) => {
-    const username = req.body.username;
+    const username = _.toLower(req.body.username);
     const lastPlayer = _.maxBy(players, "order");
 
     players = _.map(players, player => {
       if (player.order === 1) {
+        db.collection("players").updateOne(
+          {
+            username: player.username
+          },
+          {
+            $inc: {
+              score: 1
+            }
+          }
+        );
         return { ...player, order: 0, score: player.score + 1 };
       }
       return { ...player, order: 0 };
@@ -106,12 +137,15 @@ export default ({ config, db }) => {
     pusher.trigger("buzzer-channel", "players-update", {
       message: players
     });
-    pusher.trigger("buzzer-channel", "next-question", {});
+    currentQuestion += 1;
+    pusher.trigger("buzzer-channel", "next-question", {
+      currentQuestion
+    });
     res.json({ version });
   });
 
   api.post("/incorrect", (req, res) => {
-    const username = req.body.username;
+    const username = _.toLower(req.body.username);
 
     const lastPlayer = _.maxBy(players, "order");
 
@@ -140,7 +174,10 @@ export default ({ config, db }) => {
     pusher.trigger("buzzer-channel", "players-update", {
       message: players
     });
-    pusher.trigger("buzzer-channel", "next-question", {});
+    currentQuestion += 1;
+    pusher.trigger("buzzer-channel", "next-question", {
+      currentQuestion
+    });
     res.json({ version });
   });
 
